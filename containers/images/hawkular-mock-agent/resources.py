@@ -31,7 +31,13 @@ class Resources (object):
 
     @staticmethod
     def get_milliseconds_request():
-        return int(os.environ['MILLISECONDS_REQUEST'])
+
+        try:
+            milleseconds = int(os.environ['MILLISECONDS_REQUEST'])
+        except KeyError:
+            milleseconds = 5000
+
+        return milleseconds
 
     @staticmethod
     def get_url():
