@@ -31,18 +31,23 @@ class Resources (object):
 
     @staticmethod
     def get_milliseconds_request():
-
         try:
             milleseconds = int(os.environ['MILLISECONDS_REQUEST'])
         except KeyError:
             milleseconds = 5000
-
         return milleseconds
 
     @staticmethod
     def get_url():
-         url = os.environ['HAWKULAR_INVENTORY_URL']
-         port = os.environ['HAWKULAR_INVENTORY_PORT']
+        try:
+            url = os.environ['HAWKULAR_INVENTORY_URL']
+        except KeyError:
+            url  = 'http://localhost'
+        try:
+            port = os.environ['HAWKULAR_INVENTORY_PORT']
+        except KeyError:
+            port = "8080"
+
          inventory_path = "/hawkular/inventory"
          return url + ":" + port + inventory_path
 
@@ -125,13 +130,23 @@ class Resources (object):
     @staticmethod
     def create_large_inventory(feed_id):
         # Number of Server
-        num_resources = int(os.environ['NUMBER_OF_SERVERS'])
+        try:
+            num_resources = int(os.environ['NUMBER_OF_SERVERS'])
+        except KeyError:
+             num_resources = 1
 
         # Number of Children
-        num_children = int(os.environ['NUMBER_OF_CHILDREN'])
+        try:
+            num_children = int(os.environ['NUMBER_OF_CHILDREN'])
+        except KeyError:
+            num_children = 99
+
 
         # Number of Metrics
-        num_metrics = int(os.environ['NUMBER_OF_METRICS'])
+        try:
+            num_metrics = int(os.environ['NUMBER_OF_METRICS'])
+        except KeyError:
+            num_metrics = 20
 
         resources = []
         metrics = []
