@@ -7,6 +7,7 @@ you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
 author Lucas Ponce
+author Guilherme Baufaker Rego
 
    http://www.apache.org/licenses/LICENSE-2.0
 
@@ -18,9 +19,27 @@ limitations under the License
 """
 
 import json
+import os
 import requests
 
 class Resources (object):
+
+    @staticmethod
+    def get_headers():
+        headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
+        return headers
+
+    @staticmethod
+    def get_milliseconds_request():
+        return int(os.environ['MILLISECONDS_REQUEST'])
+
+    @staticmethod
+    def get_url():
+         url = os.environ['HAWKULAR_INVENTORY_URL']
+         port = os.environ['HAWKULAR_INVENTORY_PORT']
+         inventory_path = "/hawkular/inventory"
+         return url + ":" + port + inventory_path
+
 
     @staticmethod
     def create_resource_types():
@@ -98,7 +117,16 @@ class Resources (object):
         return [eap, jdg]
 
     @staticmethod
-    def create_large_inventory(feed_id, num_resources, num_children, num_metrics):
+    def create_large_inventory(feed_id):
+        # Number of Server
+        num_resources = int(os.environ['NUMBER_OF_SERVERS'])
+
+        # Number of Children
+        num_children = int(os.environ['NUMBER_OF_CHILDREN'])
+
+        # Number of Metrics
+        num_metrics = int(os.environ['NUMBER_OF_METRICS'])
+
         resources = []
         metrics = []
         for k in range(num_metrics):
@@ -164,13 +192,12 @@ class Resources (object):
         }
 
     @staticmethod
-    def add_resource_types(base_url, resource_types):
-        headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
+    def add_resource_types(resource_types):
         import_types = {
             'resources': [],
             'types': resource_types
         }
-        response = requests.post(base_url + '/import', json.dumps(import_types), headers=headers)
+        response = requests.post(Resources.get_url() + '/import', json.dumps(import_types), headers=Resources.get_headers())
         print "Imported resource types [%d]" % response.status_code,
 
     @staticmethod
