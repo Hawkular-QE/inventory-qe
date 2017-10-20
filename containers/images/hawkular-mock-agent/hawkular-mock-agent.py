@@ -40,16 +40,23 @@ class AgentLifeCycle(TaskSet):
         print "New Agent [%s]" %  self.feed_id,
         # Simulating 1 server with 99 children resources each one with 20 metrics, so 100 resources per agent
         self.agent_resources = resources.create_large_inventory(self.feed_id, 1, 99, 20)
+        self.client.post("/import", json.dumps(self.agent_resources), headers=headers)
+        print "Agent [%s] - full auto-discovery" % self.feed_id,
 
     @task
-    class ImportFullInventory(TaskSet):
-        @task
-        def import_agent_inventory(self):
-            print "Agent [%s] is importing inventory" % self.parent.feed_id,
-            self.client.post("/import", json.dumps(self.parent.agent_resources), headers=headers)
+    def deploy_app(self):
+        self.client.post("/import", json.dumps(Resources.create_app_resource(self.feed_id, self.feed_id + "-NewApp.war")), headers=headers)
+        print "Agent [%s] - deploys NewApp.war" % self.feed_id,
+
+    @task
+    def undeploy_app(self):
+        with self.client.delete("/resources/" + self.feed_id + "-NewApp.war", catch_response=True) as response:
+            if response.status_code == 404:
+                response.success()
+        print "Agent [%s] - undeploys NewApp.war" % self.feed_id,
 
 class HawkularAgent(HttpLocust):
     task_set = AgentLifeCycle
     host = inventory_url
-    min_wait = 1000
-    max_wait = 1000
+    min_wait = 5000
+    max_wait = 5000

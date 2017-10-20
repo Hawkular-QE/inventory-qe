@@ -171,5 +171,31 @@ class Resources (object):
             'types': resource_types
         }
         response = requests.post(base_url + '/import', json.dumps(import_types), headers=headers)
-        print "Imported resources [%d]" % response.status_code,
+        print "Imported resource types [%d]" % response.status_code,
 
+    @staticmethod
+    def create_app_resource(feed_id, app_id):
+        app = {
+            'id': app_id,
+            'name': "New Application",
+            'feedId': feed_id,
+            'typeId': "Application",
+            'metrics': [
+                {'name': 'MetricA', 'type':'TypeA', 'unit':'BYTES'},
+                {'name': 'MetricB', 'type':'TypeB', 'unit':'BYTES'}
+            ],
+            'properties': {
+                'prop1': 'val1',
+                'prop2': 'val2',
+                'description': "This is a description for New Application"
+            },
+            'config': {
+                'confProp1': 'confValue1',
+                'confProp2': 'confValue2'
+            }
+        }
+
+        return {
+            'resources': [app],
+            'types': []
+        }
