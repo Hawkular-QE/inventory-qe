@@ -22,6 +22,7 @@ import json
 import os
 import requests
 
+
 class Resources (object):
 
     @staticmethod
@@ -32,54 +33,49 @@ class Resources (object):
     @staticmethod
     def get_milliseconds_request():
         try:
-            milleseconds = int(os.environ['MILLISECONDS_REQUEST'])
+            milliseconds = int(os.environ['MILLISECONDS_REQUEST'])
         except KeyError:
-            milleseconds = 5000
-        return milleseconds
+            milliseconds = 5000
+        return milliseconds
 
     @staticmethod
     def get_url():
         try:
             url = os.environ['HAWKULAR_INVENTORY_URL']
         except KeyError:
-            url  = 'http://localhost'
-        try:
-            port = os.environ['HAWKULAR_INVENTORY_PORT']
-        except KeyError:
-            port = "8080"
+            url = 'http://localhost:8080'
 
-         inventory_path = "/hawkular/inventory"
-         return url + ":" + port + inventory_path
-
+        inventory_path = "/hawkular/inventory"
+        return url + inventory_path
 
     @staticmethod
     def create_resource_types():
         reload = {
-            'param1':{
+            'param1': {
                 'type': 'bool',
                 'description': 'Description of param1 for Reload op'
             },
-            'param2':{
+            'param2': {
                 'type': 'bool',
                 'description': 'Description of param2 for Reload op'
             }
         }
         shutdown = {
-            'param1':{
+            'param1': {
                 'type': 'bool',
                 'description': 'Description of param1 for Shutdown op'
             },
-            'param2':{
+            'param2': {
                 'type': 'bool',
                 'description': 'Description of param2 for Shutdown op'
             }
         }
         flush = {
-            'param1':{
+            'param1': {
                 'type': 'bool',
                 'description': 'Description of param1 for Flush op'
             },
-            'param2':{
+            'param2': {
                 'type': 'bool',
                 'description': 'Description of param2 for Flush op'
             }
@@ -133,14 +129,13 @@ class Resources (object):
         try:
             num_resources = int(os.environ['NUMBER_OF_SERVERS'])
         except KeyError:
-             num_resources = 1
+            num_resources = 1
 
         # Number of Children
         try:
             num_children = int(os.environ['NUMBER_OF_CHILDREN'])
         except KeyError:
             num_children = 99
-
 
         # Number of Metrics
         try:
@@ -156,8 +151,8 @@ class Resources (object):
                 'type': "Metric " + str(k),
                 'unit': 'BYTES',
                 'properties': {
-                    'prop1':'val1',
-                    'prop2':'val2'
+                    'prop1': 'val1',
+                    'prop2': 'val2'
                 }
             }
             metrics.append(metric)
@@ -229,8 +224,8 @@ class Resources (object):
             'feedId': feed_id,
             'typeId': "Application",
             'metrics': [
-                {'name': 'MetricA', 'type':'TypeA', 'unit':'BYTES'},
-                {'name': 'MetricB', 'type':'TypeB', 'unit':'BYTES'}
+                {'name': 'MetricA', 'type': 'TypeA', 'unit': 'BYTES'},
+                {'name': 'MetricB', 'type': 'TypeB', 'unit': 'BYTES'}
             ],
             'properties': {
                 'prop1': 'val1',
