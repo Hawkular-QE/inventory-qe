@@ -20,10 +20,19 @@ limitations under the License
 
 import json
 import os
+import pdb
+
 import requests
+from influxdb import InfluxDBClient
 
 
 class Resources (object):
+
+    def __init__(self):
+        self.influxClient = InfluxDBClient(
+        **{'host': os.environ['INFLUX_HOST'], 'username': os.environ['INFLUX_USERNAME'],
+           'port': os.environ['INFLUX_PORT'], 'database': os.environ['INFLUX_DATABASE'],
+           'password': os.environ['INFLUX_PASSWORD']})
 
     @staticmethod
     def get_headers():
@@ -221,6 +230,10 @@ class Resources (object):
 
     @staticmethod
     def create_app_resource(feed_id, app_id):
+        """
+
+        :rtype: object
+        """
         app = {
             'id': app_id,
             'name': "New Application",
@@ -245,3 +258,10 @@ class Resources (object):
             'resources': [app],
             'types': []
         }
+
+    def create_database(self):
+        return self.influxClient.query("CREATE DATABASE " + os.environ['INFLUX_DATABASE'])
+
+    def write_points(self, metrics):
+        return self.influxClient.write_points(metrics)
+
