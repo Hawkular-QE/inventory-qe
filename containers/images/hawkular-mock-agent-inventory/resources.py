@@ -41,12 +41,15 @@ class Resources (object):
     @staticmethod
     def get_url():
         try:
-            url = os.environ['HAWKULAR_INVENTORY_URL']
+            url = os.environ['HAWKULAR_HOST']
         except KeyError:
-            url = 'http://localhost:8080'
-
+            url = 'http://localhost'
+        try:
+            port = os.environ['HAWKULAR_PORT']
+        except KeyError:
+            port = "8080"
         inventory_path = "/hawkular/inventory"
-        return url + inventory_path
+        return url + ":" + port + inventory_path
 
     @staticmethod
     def create_resource_types():
