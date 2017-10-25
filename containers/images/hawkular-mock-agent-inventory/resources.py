@@ -20,9 +20,19 @@ limitations under the License
 
 import json
 import os
+import pdb
+
 import requests
+from influxdb import InfluxDBClient
+
 
 class Resources (object):
+
+    def __init__(self):
+        self.influxClient = InfluxDBClient(
+        **{'host': os.environ['INFLUX_HOST'], 'username': os.environ['INFLUX_USERNAME'],
+           'port': os.environ['INFLUX_PORT'], 'database': os.environ['INFLUX_DATABASE'],
+           'password': os.environ['INFLUX_PASSWORD']})
 
     @staticmethod
     def get_headers():
@@ -32,54 +42,52 @@ class Resources (object):
     @staticmethod
     def get_milliseconds_request():
         try:
-            milleseconds = int(os.environ['MILLISECONDS_REQUEST'])
+            milliseconds = int(os.environ['MILLISECONDS_REQUEST'])
         except KeyError:
-            milleseconds = 5000
-        return milleseconds
+            milliseconds = 5000
+        return milliseconds
 
     @staticmethod
     def get_url():
         try:
-            url = os.environ['HAWKULAR_INVENTORY_URL']
+            url = os.environ['HAWKULAR_HOST']
         except KeyError:
-            url  = 'http://localhost'
+            url = 'http://localhost'
         try:
-            port = os.environ['HAWKULAR_INVENTORY_PORT']
+            port = os.environ['HAWKULAR_PORT']
         except KeyError:
             port = "8080"
-
-         inventory_path = "/hawkular/inventory"
-         return url + ":" + port + inventory_path
-
+        inventory_path = "/hawkular/inventory"
+        return url + ":" + port + inventory_path
 
     @staticmethod
     def create_resource_types():
         reload = {
-            'param1':{
+            'param1': {
                 'type': 'bool',
                 'description': 'Description of param1 for Reload op'
             },
-            'param2':{
+            'param2': {
                 'type': 'bool',
                 'description': 'Description of param2 for Reload op'
             }
         }
         shutdown = {
-            'param1':{
+            'param1': {
                 'type': 'bool',
                 'description': 'Description of param1 for Shutdown op'
             },
-            'param2':{
+            'param2': {
                 'type': 'bool',
                 'description': 'Description of param2 for Shutdown op'
             }
         }
         flush = {
-            'param1':{
+            'param1': {
                 'type': 'bool',
                 'description': 'Description of param1 for Flush op'
             },
-            'param2':{
+            'param2': {
                 'type': 'bool',
                 'description': 'Description of param2 for Flush op'
             }
@@ -133,14 +141,13 @@ class Resources (object):
         try:
             num_resources = int(os.environ['NUMBER_OF_SERVERS'])
         except KeyError:
-             num_resources = 1
+            num_resources = 1
 
         # Number of Children
         try:
             num_children = int(os.environ['NUMBER_OF_CHILDREN'])
         except KeyError:
             num_children = 99
-
 
         # Number of Metrics
         try:
@@ -156,8 +163,8 @@ class Resources (object):
                 'type': "Metric " + str(k),
                 'unit': 'BYTES',
                 'properties': {
-                    'prop1':'val1',
-                    'prop2':'val2'
+                    'prop1': 'val1',
+                    'prop2': 'val2'
                 }
             }
             metrics.append(metric)
@@ -223,14 +230,18 @@ class Resources (object):
 
     @staticmethod
     def create_app_resource(feed_id, app_id):
+        """
+
+        :rtype: object
+        """
         app = {
             'id': app_id,
             'name': "New Application",
             'feedId': feed_id,
             'typeId': "Application",
             'metrics': [
-                {'name': 'MetricA', 'type':'TypeA', 'unit':'BYTES'},
-                {'name': 'MetricB', 'type':'TypeB', 'unit':'BYTES'}
+                {'name': 'MetricA', 'type': 'TypeA', 'unit': 'BYTES'},
+                {'name': 'MetricB', 'type': 'TypeB', 'unit': 'BYTES'}
             ],
             'properties': {
                 'prop1': 'val1',
@@ -247,3 +258,10 @@ class Resources (object):
             'resources': [app],
             'types': []
         }
+
+    def create_database(self):
+        return self.influxClient.query("CREATE DATABASE " + os.environ['INFLUX_DATABASE'])
+
+    def write_points(self, metrics):
+        return self.influxClient.write_points(metrics)
+
