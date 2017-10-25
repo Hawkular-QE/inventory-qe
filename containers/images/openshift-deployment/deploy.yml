@@ -1,0 +1,140 @@
+#
+# Copyright 2016-2017 Red Hat, Inc. and/or its affiliates
+# and other contributors as indicated by the @author tags.
+#
+#  @author Guilherme Baufaker Rêgo (gbaufake)
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+apiVersion: v1
+kind: Template
+metadata:
+  name: scalability-hawkular-inventory
+  annotations:
+    openshift.io/display-name: Hawkular Inventory Scalability Test
+    description: a QE/DEV test for Hawkular Inventory
+parameters:
+- name: NUMBER_OF_CLIENTS
+  description: Number of Clients per pod
+  value: '1000'
+
+- name: DOCKER_IMAGE
+  description: What docker image should be used
+  value: gbaufake/hawkular-agent-mock-inventory
+
+- name: HAWKULAR_HOST
+  description: What is the Hawkular Host
+  value:
+
+- name: HAWKULAR_PORT
+  description: What is the Hawkular Port
+  value: '80'
+
+- name: MILLISECONDS_REQUEST
+  description: Define how many seconds the application needs to wait until the next request
+  value: '5000'
+
+- name: NUMBER_OF_SERVERS
+  description: Number of EAPs to simulate
+  value: '1'
+
+- name: NUMBER_OF_CHILDREN
+  description: Number of children
+  value: '99'
+
+- name: NUMBER_OF_METRICS
+  description: Number of Metrics
+  value: '20'
+
+- name: INFLUX_HOST
+  description: InfluxDB Host
+  value:
+
+- name: INFLUX_USERNAME
+  description: Username that is used for accessing the InfluxDB
+  value: admin
+
+- name: INFLUX_PASSWORD
+  description: InfluDB Password that is used for accessing the InfluxDb
+
+  value:
+- name: INFLUX_PORT
+  description: What is the Influx port
+  value: '8086'
+
+- name: INFLUX_DATABASE
+  description: InfluxDB Database for hawkular-mock-agent
+  value: scalability-inventory
+
+objects:
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    annotations:
+      description: Defines how to deploy the application server
+    name: scalability-hawkular-inventory
+  spec:
+    replicas: '1'
+    selector:
+      name: scalability-hawkular-inventory
+    strategy:
+      type: Recreate
+    template:
+      metadata:
+        labels:
+          name: scalability-hawkular-inventory
+      spec:
+        containers:
+        - image: ${DOCKER_IMAGE}
+          env:
+          - name: NUMBER_OF_CLIENTS
+            value: ${NUMBER_OF_CLIENTS}
+
+          - name: HAWKULAR_HOST
+            value: ${HAWKULAR_HOST}
+
+          - name: HAWKULAR_PORT
+            value: ${HAWKULAR_PORT}
+
+          - name: NUMBER_OF_SERVERS
+            value: ${NUMBER_OF_SERVERS}
+
+          - name: NUMBER_OF_CHILDREN
+            value: ${NUMBER_OF_CHILDREN}
+
+          - name: NUMBER_OF_METRICS
+            value: ${NUMBER_OF_METRICS}
+
+          - name: HAWKULAR_PORT
+            value: ${HAWKULAR_PORT}
+
+          - name: INFLUX_HOST
+            value: ${INFLUX_HOST}
+
+          - name: INFLUX_PORT
+            value: ${INFLUX_PORT}
+
+          - name: INFLUX_DATABASE
+            value: ${INFLUX_DATABASE}
+
+          - name: INFLUX_USERNAME
+            value: ${INFLUX_USERNAME}
+
+          - name: INFLUX_PASSWORD
+            value: ${INFLUX_PASSWORD}
+
+          - name: MILLISECONDS_REQUEST
+            value: ${MILLISECONDS_REQUEST}
+
+          imagePullPolicy: Always
+          name: scalability-hawkular-inventory
