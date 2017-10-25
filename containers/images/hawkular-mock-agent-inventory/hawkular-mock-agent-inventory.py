@@ -42,13 +42,13 @@ class AgentLifeCycle(TaskSet):
     @task
     def deploy_app(self):
         self.client.post("/import",
-                         json.dumps(Resources.create_app_resource(self.feed_id, self.feed_id + "-NewApp.war")),
-                         headers=resources.get_headers())
+                         json.dumps(Resources.create_app_resource(self.feed_id, self.feed_id + "-NewApp.war")), headers=resources.get_headers())
         print "Agent [%s] - deploys NewApp.war" % self.feed_id
 
     @task
     def undeploy_app(self):
-        with self.client.delete("/resources/" + self.feed_id + "-NewApp.war", catch_response=True) as response:
+        with self.client.delete("/resources/" + self.feed_id + "-NewApp.war", headers=resources.get_headers(),
+                                catch_response=True) as response:
             if response.status_code == 404:
                 response.success()
                 print "Agent [%s] - undeploys NewApp.war" % self.feed_id
