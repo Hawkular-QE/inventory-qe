@@ -71,6 +71,7 @@ class HawkularAgent(HttpLocust):
         tags = {'agent': feed}
         metrics['measurement'] = "request"
         fields = {'request_type': request_type,
+                  'request_increment': 1,
                   'response_time': response_time, 'response_length': response_length,
                   'name': name}
         metrics['fields'] = fields
