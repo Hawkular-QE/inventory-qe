@@ -17,10 +17,9 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License
 """
-
+import base64
 import json
 import os
-import pdb
 
 import requests
 from influxdb import InfluxDBClient
@@ -36,7 +35,10 @@ class Resources (object):
 
     @staticmethod
     def get_headers():
-        headers = {'Content-type': 'application/json', 'Accept': 'application/json'}
+        headers = {'Content-type': 'application/json', 'Accept': 'application/json',
+                   'Authorization': "Basic %s" % base64.b64encode(os.environ['HAWKULAR_USERNAME'] + ":" + os.environ[
+                       'HAWKULAR_PASSWORD'])
+                   }
         return headers
 
     @staticmethod

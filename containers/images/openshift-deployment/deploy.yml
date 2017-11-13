@@ -36,6 +36,14 @@ parameters:
   description: What is the Hawkular Host
   value:
 
+- name: HAWKULAR_USERNAME
+  description: What is the Hawkular username
+  value: jdoe
+
+- name: HAWKULAR_PASSWORD
+  description: What is the Hawkular password
+  value: password
+
 - name: HAWKULAR_PORT
   description: What is the Hawkular Port
   value: '80'
@@ -114,6 +122,12 @@ objects:
 
           - name: NUMBER_OF_METRICS
             value: ${NUMBER_OF_METRICS}
+
+          - name: HAWKULAR_USERNAME
+            value: ${HAWKULAR_USERNAME}
+
+          - name: HAWKULAR_PASSWORD
+            value: ${HAWKULAR_PASSWORD}
 
           - name: HAWKULAR_PORT
             value: ${HAWKULAR_PORT}
