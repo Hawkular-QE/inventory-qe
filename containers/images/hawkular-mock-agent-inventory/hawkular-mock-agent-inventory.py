@@ -57,6 +57,8 @@ class AgentLifeCycle(TaskSet):
 class HawkularAgent(HttpLocust):
     task_set = AgentLifeCycle
     host = resources.get_url()
+    global execution
+    execution = "execution" + str(uuid.uuid4())
     min_wait = resources.get_milliseconds_request()
     max_wait = resources.get_milliseconds_request()
     resources.create_database()
@@ -68,10 +70,11 @@ class HawkularAgent(HttpLocust):
 
     def hook_request_success(self, request_type, name, response_time, response_length):
         metrics = {}
-        tags = {'agent': feed}
+        tags = {'execution': execution}
         metrics['measurement'] = "request"
         fields = {'request_type': request_type,
                   'request_increment': 1,
+                  'agent': feed,
                   'response_time': response_time, 'response_length': response_length,
                   'name': name}
         metrics['fields'] = fields
