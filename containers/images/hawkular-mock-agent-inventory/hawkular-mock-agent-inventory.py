@@ -36,22 +36,20 @@ class AgentLifeCycle(TaskSet):
         feed = self.feed_id
         print "New Agent [%s]" % self.feed_id,
         self.agent_resources = resources.create_large_inventory(self.feed_id)
-        self.client.post("/import", json.dumps(self.agent_resources), headers=resources.get_headers())
-        print "Agent [%s] - full auto-discovery" % self.feed_id,
+        with self.client.post("/import", json.dumps(self.agent_resources), headers=resources.get_headers()) as response:
+            print "Agent [%s] - full auto-discovery" % self.feed_id
 
     @task
     def deploy_app(self):
-        self.client.post("/import",
-                         json.dumps(Resources.create_app_resource(self.feed_id, self.feed_id + "-NewApp.war")), headers=resources.get_headers())
-        print "Agent [%s] - deploys NewApp.war" % self.feed_id
+        with self.client.post("/import",
+                         json.dumps(Resources.create_app_resource(self.feed_id, self.feed_id + "-NewApp.war")), headers=resources.get_headers()) as response:
+            print "Agent [%s] - deploys NewApp.war" % self.feed_id
 
     @task
     def undeploy_app(self):
         with self.client.delete("/resources/" + self.feed_id + "-NewApp.war", headers=resources.get_headers(),
                                 catch_response=True) as response:
-            if response.status_code == 404:
-                response.success()
-                print "Agent [%s] - undeploys NewApp.war" % self.feed_id
+            print "Agent [%s] - undeploys NewApp.war" % self.feed_id
 
 
 class HawkularAgent(HttpLocust):
@@ -84,3 +82,6 @@ class HawkularAgent(HttpLocust):
     def hook_request_fail(self, request_type, name, response_time, exception):
         print "Agent [%s] - failed to " % feed + str(request_type) + " Exception: " + str(exception)
 
+if __name__ == '__main__':
+    agent = HawkularAgent()
+    agent.run()
