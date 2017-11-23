@@ -86,8 +86,10 @@ class HawkularAgent(HttpLocust):
         fields = {'request_type': request_type,
                   'request_increment': 1,
                   'agent': feed,
-                  'response_time': response_time, 'exception': exception,
-                  'name': name}
+                  'response_time': response_time,
+                  'method': exception.request.method,
+                  'name': exception.request.path_url,
+                  'headers': str(exception.request.headers)}
         metrics['fields'] = fields
         metrics['tags'] = tags
         resources.write_points([metrics])
