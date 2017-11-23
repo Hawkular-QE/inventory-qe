@@ -80,6 +80,18 @@ class HawkularAgent(HttpLocust):
         resources.write_points([metrics])
 
     def hook_request_fail(self, request_type, name, response_time, exception):
+        metrics = {}
+        tags = {'execution': execution}
+        metrics['measurement'] = "exception"
+        fields = {'request_type': request_type,
+                  'request_increment': 1,
+                  'agent': feed,
+                  'response_time': response_time, 'exception': exception,
+                  'name': name}
+        metrics['fields'] = fields
+        metrics['tags'] = tags
+        resources.write_points([metrics])
+
         print "Agent [%s] - failed to " % feed + str(request_type) + " Exception: " + str(exception)
 
 if __name__ == '__main__':
