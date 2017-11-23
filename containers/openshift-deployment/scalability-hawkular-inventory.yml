@@ -34,7 +34,7 @@ parameters:
 
 - name: HAWKULAR_HOST
   description: What is the Hawkular Host
-  value:
+  value: ''
 
 - name: HAWKULAR_USERNAME
   description: What is the Hawkular username
@@ -66,7 +66,7 @@ parameters:
 
 - name: INFLUX_HOST
   description: InfluxDB Host
-  value:
+  value: ''
 
 - name: INFLUX_USERNAME
   description: Username that is used for accessing the InfluxDB
@@ -74,15 +74,15 @@ parameters:
 
 - name: INFLUX_PASSWORD
   description: InfluDB Password that is used for accessing the InfluxDb
+  value: 'password'
 
-  value:
 - name: INFLUX_PORT
   description: What is the Influx port
   value: '8086'
 
 - name: INFLUX_DATABASE
   description: InfluxDB Database for hawkular-mock-agent
-  value: scalability-inventory
+  value: scalability
 
 objects:
 - apiVersion: v1
