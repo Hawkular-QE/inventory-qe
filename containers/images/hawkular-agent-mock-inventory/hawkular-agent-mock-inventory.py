@@ -36,27 +36,27 @@ class AgentLifeCycle(TaskSet):
         feed = self.feed_id
         print "New Agent [%s]" % self.feed_id,
         self.agent_resources = resources.create_large_inventory(self.feed_id)
-        self.client.post("/import", json.dumps(self.agent_resources), headers=resources.get_headers())
-        print "Agent [%s] - full auto-discovery" % self.feed_id,
+        with self.client.post("/import", json.dumps(self.agent_resources), headers=resources.get_headers()) as response:
+            print "Agent [%s] - full auto-discovery" % self.feed_id
 
     @task
     def deploy_app(self):
-        self.client.post("/import",
-                         json.dumps(Resources.create_app_resource(self.feed_id, self.feed_id + "-NewApp.war")), headers=resources.get_headers())
-        print "Agent [%s] - deploys NewApp.war" % self.feed_id
+        with self.client.post("/import",
+                         json.dumps(Resources.create_app_resource(self.feed_id, self.feed_id + "-NewApp.war")), headers=resources.get_headers()) as response:
+            print "Agent [%s] - deploys NewApp.war" % self.feed_id
 
     @task
     def undeploy_app(self):
         with self.client.delete("/resources/" + self.feed_id + "-NewApp.war", headers=resources.get_headers(),
                                 catch_response=True) as response:
-            if response.status_code == 404:
-                response.success()
-                print "Agent [%s] - undeploys NewApp.war" % self.feed_id
+            print "Agent [%s] - undeploys NewApp.war" % self.feed_id
 
 
 class HawkularAgent(HttpLocust):
     task_set = AgentLifeCycle
     host = resources.get_url()
+    global execution
+    execution = "execution" + str(uuid.uuid4())
     min_wait = resources.get_milliseconds_request()
     max_wait = resources.get_milliseconds_request()
     resources.create_database()
@@ -68,10 +68,11 @@ class HawkularAgent(HttpLocust):
 
     def hook_request_success(self, request_type, name, response_time, response_length):
         metrics = {}
-        tags = {'agent': feed}
+        tags = {'execution': execution}
         metrics['measurement'] = "request"
         fields = {'request_type': request_type,
                   'request_increment': 1,
+                  'agent': feed,
                   'response_time': response_time, 'response_length': response_length,
                   'name': name}
         metrics['fields'] = fields
@@ -79,5 +80,22 @@ class HawkularAgent(HttpLocust):
         resources.write_points([metrics])
 
     def hook_request_fail(self, request_type, name, response_time, exception):
+        metrics = {}
+        tags = {'execution': execution}
+        metrics['measurement'] = "exception"
+        fields = {'request_type': request_type,
+                  'request_increment': 1,
+                  'agent': feed,
+                  'response_time': response_time,
+                  'method': exception.request.method,
+                  'name': exception.request.path_url,
+                  'headers': str(exception.request.headers)}
+        metrics['fields'] = fields
+        metrics['tags'] = tags
+        resources.write_points([metrics])
+
         print "Agent [%s] - failed to " % feed + str(request_type) + " Exception: " + str(exception)
 
+if __name__ == '__main__':
+    agent = HawkularAgent()
+    agent.run()

@@ -161,8 +161,8 @@ class Resources (object):
         metrics = []
         for k in range(num_metrics):
             metric = {
-                'name': "metric-" + str(k),
-                'type': "Metric " + str(k),
+                'displayName': "metric-" + str(k),
+                'family': "Metric " + str(k),
                 'unit': 'BYTES',
                 'properties': {
                     'prop1': 'val1',
@@ -242,8 +242,8 @@ class Resources (object):
             'feedId': feed_id,
             'typeId': "Application",
             'metrics': [
-                {'name': 'MetricA', 'type': 'TypeA', 'unit': 'BYTES'},
-                {'name': 'MetricB', 'type': 'TypeB', 'unit': 'BYTES'}
+                {'displayName': 'MetricA', 'family': 'FamiliyA', 'unit': 'BYTES'},
+                {'displayName': 'MetricB', 'family': 'FamilyB', 'unit': 'BYTES'}
             ],
             'properties': {
                 'prop1': 'val1',

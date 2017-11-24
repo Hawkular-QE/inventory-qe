@@ -1,0 +1,155 @@
+apiVersion: v1
+kind: Template
+metadata:
+  name: hawkular-services
+  annotations:
+    openshift.io/display-name: Hawkular Services
+    description: Hawkular Services all-in-one (Hawkular Alerts and Hawkular Inventory).
+    iconClass: icon-wildfly
+    tags: hawkular,hawkular-services,alerts,manageiq, prometheus
+parameters:
+- name: HAWKULAR_SERVICES_IMAGE
+  description: What docker image should be used for Hawkular Services.
+  displayName: Hawkular Services Docker Image
+  value: hawkular/hawkular-services:hawkular-1275
+- name: ROUTE_NAME
+  description: Public route with this name will be created.
+  displayName: Route Name
+  value: hawkular-services
+- name: ROUTE_HOSTNAME
+  description: Under this hostname the Hawkular Services will be accessible, if left blank a value will be defaulted.
+  displayName: Hostname
+- name: HAWKULAR_USE_SSL
+  description: Should the self-signed certificate be created
+  displayName: Use SSL
+  value: "true"
+- name: HAWKULAR_USER
+  description: Username that is used for accessing the Hawkular Services, if left blank a value will be generated.
+  displayName: Hawkular Services User
+  from: '[a-zA-Z0-9]{16}'
+  generate: expression
+- name: HAWKULAR_PASSWORD
+  description: Password that is used for accessing the Hawkular Services, if left blank a value will be generated.
+  displayName: Hawkular Services Password
+  from: '[a-zA-Z0-9]{16}'
+  generate: expression
+labels:
+  template: hawkular-services
+message: Credentials for Hawkular Services are ${HAWKULAR_USER}:${HAWKULAR_PASSWORD}
+
+objects:
+- apiVersion: v1
+  kind: Service
+  metadata:
+    annotations:
+      description: Exposes and load balances the application pods
+      service.alpha.openshift.io/dependencies: '[{"namespace":"","kind":"Service"}]'
+    name: hawkular-services
+  spec:
+    ports:
+    - name: http-8080-tcp
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+    
+    - name: http-9779-tcp
+      port: 9779
+      protocol: TCP
+      targetPort: 9779
+    
+    - name: https-8443-tcp
+      port: 8443
+      protocol: TCP
+      targetPort: 8443
+    - name: admin-9990-tcp
+      port: 9990
+      protocol: TCP
+      targetPort: 9990
+    selector:
+      name: hawkular-services
+    type: ClusterIP
+
+- apiVersion: v1
+  kind: Route
+  metadata:
+    name: ${ROUTE_NAME}
+  spec:
+    host: ${ROUTE_HOSTNAME}
+    to:
+      kind: Service
+      name: hawkular-services
+    port:
+      targetPort: http-8080-tcp
+      
+- apiVersion: v1
+  kind: Route
+  metadata:
+    name: jmx
+  spec:
+    host: 
+    to:
+      kind: Service
+      name: hawkular-services
+    port:
+      targetPort: http-9779-tcp
+
+- apiVersion: v1
+  kind: DeploymentConfig
+  metadata:
+    annotations:
+      description: Defines how to deploy the application server
+    name: hawkular-services
+  spec:
+    replicas: 1
+    selector:
+      name: hawkular-services
+    strategy:
+      type: Recreate
+    template:
+      metadata:
+        labels:
+          name: hawkular-services
+      spec:
+        containers:
+        - image: ${HAWKULAR_SERVICES_IMAGE}
+          env:
+          - name: HAWKULAR_BACKEND
+            value: remote
+          - name: HAWKULAR_USE_SSL
+            value: ${HAWKULAR_USE_SSL}
+          - name: HAWKULAR_USER
+            value: ${HAWKULAR_USER}
+          - name: HAWKULAR_PASSWORD
+            value: ${HAWKULAR_PASSWORD}
+          name: hawkular-services
+          volumeMounts:
+          - name: h-services-data
+            mountPath: /var/opt/hawkular
+          ports:
+          - containerPort: 8080
+          - containerPort: 8443
+          - containerPort: 9990
+          livenessProbe:
+            exec:
+              command:
+              - /opt/hawkular/bin/ready.sh
+            initialDelaySeconds: 180
+            timeoutSeconds: 3
+          readinessProbe:
+            exec:
+              command:
+              - /opt/hawkular/bin/ready.sh
+            initialDelaySeconds: 35
+            timeoutSeconds: 3
+            periodSeconds: 5
+            successThreshold: 1
+            failureThreshold: 12
+          resources:
+            requests:
+              memory: 1024Mi
+              cpu: 2000m
+        dnsPolicy: ClusterFirst
+        restartPolicy: Always
+        volumes:
+        - name: h-services-data
+          emptyDir: {}
